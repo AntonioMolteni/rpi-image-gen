@@ -1,0 +1,158 @@
+# METABEGIN
+# X-Env-Layer-Name: digilock-platform
+# X-Env-Layer-Category: example
+# X-Env-Layer-Desc: Digilock offline kiosk platform starter layer.
+# X-Env-Layer-Version: 1.0.0
+# X-Env-Layer-Requires: rpi-user-credentials,systemd-net-min,systemd-timesyncd
+#
+# X-Env-VarPrefix: digilock
+#
+# X-Env-Var-kiosk_url: http://127.0.0.1:8080/index.html
+# X-Env-Var-kiosk_url-Desc: Local URL used by Chromium kiosk shell.
+# X-Env-Var-kiosk_url-Required: n
+# X-Env-Var-kiosk_url-Valid: string
+# X-Env-Var-kiosk_url-Set: y
+#
+# X-Env-Var-api_bind: 127.0.0.1:7080
+# X-Env-Var-api_bind-Desc: Bind address for local hardware-agent API endpoint.
+# X-Env-Var-api_bind-Required: n
+# X-Env-Var-api_bind-Valid: string
+# X-Env-Var-api_bind-Set: y
+#
+# X-Env-Var-site_mode: gym
+# X-Env-Var-site_mode-Desc: App mode identifier exposed to kiosk frontend.
+# X-Env-Var-site_mode-Required: n
+# X-Env-Var-site_mode-Valid: string
+# X-Env-Var-site_mode-Set: y
+#
+# X-Env-Var-update_base_url: 
+# X-Env-Var-update_base_url-Desc: HTTPS base URL that hosts release artifacts and manifest.json. Empty disables remote updates.
+# X-Env-Var-update_base_url-Required: n
+# X-Env-Var-update_base_url-Valid: string
+# X-Env-Var-update_base_url-Set: y
+#
+# X-Env-Var-update_base_urls: 
+# X-Env-Var-update_base_urls-Desc: Space-separated list of update servers for failover.
+# X-Env-Var-update_base_urls-Required: n
+# X-Env-Var-update_base_urls-Valid: string
+# X-Env-Var-update_base_urls-Set: y
+#
+# X-Env-Var-update_channel: stable
+# X-Env-Var-update_channel-Desc: Release channel requested by kiosk updater.
+# X-Env-Var-update_channel-Required: n
+# X-Env-Var-update_channel-Valid: string
+# X-Env-Var-update_channel-Set: y
+#
+# X-Env-Var-device_id: 
+# X-Env-Var-device_id-Desc: Device identifier sent to the update service; empty falls back to hostname.
+# X-Env-Var-device_id-Required: n
+# X-Env-Var-device_id-Valid: string
+# X-Env-Var-device_id-Set: y
+#
+# X-Env-Var-enroll_token: 
+# X-Env-Var-enroll_token-Desc: Optional bearer token used by updater for authenticated artifact downloads.
+# X-Env-Var-enroll_token-Required: n
+# X-Env-Var-enroll_token-Valid: string
+# X-Env-Var-enroll_token-Set: y
+#
+# X-Env-Var-allow_unsigned_updates: n
+# X-Env-Var-allow_unsigned_updates-Desc: Demo switch; keep set to n in production.
+# X-Env-Var-allow_unsigned_updates-Required: n
+# X-Env-Var-allow_unsigned_updates-Valid: y,n
+# X-Env-Var-allow_unsigned_updates-Set: y
+#
+# X-Env-Var-kiosk_enabled: y
+# X-Env-Var-kiosk_enabled-Desc: Set to n for headless kiosks without local display UI.
+# X-Env-Var-kiosk_enabled-Required: n
+# X-Env-Var-kiosk_enabled-Valid: y,n
+# X-Env-Var-kiosk_enabled-Set: y
+# METAEND
+---
+mmdebstrap:
+  packages:
+    - cage
+    - chromium
+    - nginx-light
+    - curl
+    - jq
+    - openssh-server
+  customize-hooks:
+    - |
+      set -eu
+      export KIOSK_USER="$IGconf_device_user1"
+      export KIOSK_URL="$IGconf_digilock_kiosk_url"
+      export API_BIND="$IGconf_digilock_api_bind"
+      export UPDATE_BASE_URL="$IGconf_digilock_update_base_url"
+      export UPDATE_BASE_URLS="$IGconf_digilock_update_base_urls"
+      export UPDATE_CHANNEL="$IGconf_digilock_update_channel"
+      export DEVICE_ID="$IGconf_digilock_device_id"
+      export ENROLL_TOKEN="$IGconf_digilock_enroll_token"
+      export ALLOW_UNSIGNED_UPDATES="$IGconf_digilock_allow_unsigned_updates"
+      export KIOSK_ENABLED="$IGconf_digilock_kiosk_enabled"
+
+      install -d "$1/opt/digilock/apps/releases/bootstrap"
+      cat <<EOF > "$1/opt/digilock/apps/releases/bootstrap/index.html"
+      <!doctype html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>DigiLock Kiosk</title>
+        <style>
+          body { font-family: sans-serif; margin: 0; background: #0a1724; color: #f5f7fb; }
+          main { min-height: 100vh; display: grid; place-items: center; }
+          section { width: min(760px, 90vw); background: #102236; border-radius: 18px; padding: 32px; }
+          h1 { margin-top: 0; }
+          .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; background: #1c3552; }
+          code { color: #9fd3ff; }
+        </style>
+      </head>
+      <body>
+        <main>
+          <section>
+            <h1>DigiLock Offline Kiosk Starter</h1>
+            <p class="pill">Mode: $IGconf_digilock_site_mode</p>
+            <p>This placeholder runs fully offline and should be replaced by your real app bundle.</p>
+            <p>Expected local hardware API endpoint: <code>$IGconf_digilock_api_bind</code></p>
+          </section>
+        </main>
+      </body>
+      </html>
+      EOF
+
+      ln -sfn /opt/digilock/apps/releases/bootstrap "$1/opt/digilock/apps/current"
+
+      install -d "$1/opt/digilock/agent/releases/bootstrap" "$1/opt/digilock/agent/current"
+      install -d "$1/etc/digilock"
+
+      cat <<EOF > "$1/etc/digilock/default.env"
+DIGILOCK_KIOSK_URL=$KIOSK_URL
+DIGILOCK_API_BIND=$API_BIND
+DIGILOCK_UPDATE_BASE_URL=$UPDATE_BASE_URL
+DIGILOCK_UPDATE_BASE_URLS=$UPDATE_BASE_URLS
+DIGILOCK_UPDATE_CHANNEL=$UPDATE_CHANNEL
+DIGILOCK_DEVICE_ID=$DEVICE_ID
+DIGILOCK_ENROLL_TOKEN=$ENROLL_TOKEN
+DIGILOCK_ALLOW_UNSIGNED_UPDATES=$ALLOW_UNSIGNED_UPDATES
+DIGILOCK_KIOSK_ENABLED=$KIOSK_ENABLED
+EOF
+
+      install -m 0644 nginx-digilock.conf "$1/etc/nginx/sites-available/digilock"
+      rm -f "$1/etc/nginx/sites-enabled/default"
+      ln -sf ../sites-available/digilock "$1/etc/nginx/sites-enabled/digilock"
+
+      install -m 0755 hw-agent.sh "$1/usr/local/lib/digilock-hw-agent-fallback"
+      install -m 0755 digilock-agent-launcher.sh "$1/usr/local/bin/digilock-agent-launcher"
+      install -m 0755 digilock-kiosk-launcher.sh "$1/usr/local/bin/digilock-kiosk-launcher"
+      install -m 0755 digilock-updater.sh "$1/usr/local/bin/digilock-updater"
+      install -m 0755 digilock-config-apply.sh "$1/usr/local/bin/digilock-config-apply"
+
+      envsubst < digilock-hw-agent.service.tpl > "$1/etc/systemd/system/digilock-hw-agent.service"
+      envsubst < digilock-kiosk.service.tpl > "$1/etc/systemd/system/digilock-kiosk.service"
+      envsubst < digilock-updater.service.tpl > "$1/etc/systemd/system/digilock-updater.service"
+      envsubst < digilock-updater.timer.tpl > "$1/etc/systemd/system/digilock-updater.timer"
+      install -m 0644 digilock-config-apply.service "$1/etc/systemd/system/digilock-config-apply.service"
+    - $BDEBSTRAP_HOOKS/enable-units "$1" nginx digilock-hw-agent digilock-kiosk
+    - $BDEBSTRAP_HOOKS/enable-units "$1" digilock-config-apply ssh
+    - $BDEBSTRAP_HOOKS/enable-units "$1" digilock-updater.timer
+    - $BDEBSTRAP_HOOKS/disable-units "$1" getty@tty1 systemd-networkd-wait-online

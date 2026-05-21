@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: Digilock Hardware Bridge API
+  version: 0.1.0
+  description: |
+    Local offline-first API exposed by digilock-hw-agent for kiosk apps.
+servers:
+  - url: http://127.0.0.1:7080
+paths:
+  /health:
+    get:
+      summary: Agent health
+      responses:
+        "200":
+          description: Agent running
+  /v1/locks/{lockId}/open:
+    post:
+      summary: Request lock open action
+      parameters:
+        - in: path
+          name: lockId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requestId]
+              properties:
+                requestId:
+                  type: string
+                actorId:
+                  type: string
+                reason:
+                  type: string
+      responses:
+        "202":
+          description: Accepted
+  /v1/cards/verify:
+    post:
+      summary: Verify card token against local policy/cache
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+                readerId:
+                  type: string
+      responses:
+        "200":
+          description: Verification result
+components:
+  schemas: {}

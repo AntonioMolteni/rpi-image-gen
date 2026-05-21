@@ -1,0 +1,30 @@
+include:
+  file: trixie-minbase-ab.yaml
+
+device:
+  user1: pi
+  user1pass: ChangeMe123!
+  hostname: digilock-kiosk
+
+image:
+  system_part_size: 1800M
+  name: digilock-kiosk
+
+layer:
+  app: digilock-platform
+  extra: rpi-splash-screen
+
+splash:
+  image_path: ${@SRCROOT}/digilock-splash.tga
+  skip_image_checks: y
+
+digilock:
+  kiosk_url: http://127.0.0.1:8080/index.html
+  kiosk_enabled: y
+  api_bind: 127.0.0.1:7080
+  site_mode: gym
+  update_base_urls: ""
+  update_channel: stable
+  device_id: ""
+  enroll_token: ""
+  allow_unsigned_updates: n
