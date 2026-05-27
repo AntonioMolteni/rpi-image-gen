@@ -1,0 +1,19 @@
+include:
+  file: trixie-minbase-ab.yaml
+
+device:
+  user1: pi
+  user1pass: ChangeMe123!
+  hostname: digilock-kiosk
+
+image:
+  system_part_size: 1800M
+  name: digilock-kiosk
+
+layer:
+  app: kiosk-display
+  extra: rpi-splash-screen
+
+splash:
+  image_path: ${@SRCROOT}/digilock-splash.tga
+  skip_image_checks: y
