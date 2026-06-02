@@ -28,13 +28,13 @@
 # X-Env-Var-update_base_url: 
 # X-Env-Var-update_base_url-Desc: HTTPS base URL that hosts release artifacts and manifest.json. Empty disables remote updates.
 # X-Env-Var-update_base_url-Required: n
-# X-Env-Var-update_base_url-Valid: string
+# X-Env-Var-update_base_url-Valid: string-or-empty
 # X-Env-Var-update_base_url-Set: y
 #
 # X-Env-Var-update_base_urls: 
 # X-Env-Var-update_base_urls-Desc: Space-separated list of update servers for failover.
 # X-Env-Var-update_base_urls-Required: n
-# X-Env-Var-update_base_urls-Valid: string
+# X-Env-Var-update_base_urls-Valid: string-or-empty
 # X-Env-Var-update_base_urls-Set: y
 #
 # X-Env-Var-update_channel: stable
@@ -46,13 +46,13 @@
 # X-Env-Var-device_id: 
 # X-Env-Var-device_id-Desc: Device identifier sent to the update service; empty falls back to hostname.
 # X-Env-Var-device_id-Required: n
-# X-Env-Var-device_id-Valid: string
+# X-Env-Var-device_id-Valid: string-or-empty
 # X-Env-Var-device_id-Set: y
 #
 # X-Env-Var-enroll_token: 
 # X-Env-Var-enroll_token-Desc: Optional bearer token used by updater for authenticated artifact downloads.
 # X-Env-Var-enroll_token-Required: n
-# X-Env-Var-enroll_token-Valid: string
+# X-Env-Var-enroll_token-Valid: string-or-empty
 # X-Env-Var-enroll_token-Set: y
 #
 # X-Env-Var-allow_unsigned_updates: n
@@ -126,16 +126,16 @@ mmdebstrap:
       install -d "$1/etc/digilock"
 
       cat <<EOF > "$1/etc/digilock/default.env"
-DIGILOCK_KIOSK_URL=$KIOSK_URL
-DIGILOCK_API_BIND=$API_BIND
-DIGILOCK_UPDATE_BASE_URL=$UPDATE_BASE_URL
-DIGILOCK_UPDATE_BASE_URLS=$UPDATE_BASE_URLS
-DIGILOCK_UPDATE_CHANNEL=$UPDATE_CHANNEL
-DIGILOCK_DEVICE_ID=$DEVICE_ID
-DIGILOCK_ENROLL_TOKEN=$ENROLL_TOKEN
-DIGILOCK_ALLOW_UNSIGNED_UPDATES=$ALLOW_UNSIGNED_UPDATES
-DIGILOCK_KIOSK_ENABLED=$KIOSK_ENABLED
-EOF
+        DIGILOCK_KIOSK_URL=$KIOSK_URL
+        DIGILOCK_API_BIND=$API_BIND
+        DIGILOCK_UPDATE_BASE_URL=$UPDATE_BASE_URL
+        DIGILOCK_UPDATE_BASE_URLS=$UPDATE_BASE_URLS
+        DIGILOCK_UPDATE_CHANNEL=$UPDATE_CHANNEL
+        DIGILOCK_DEVICE_ID=$DEVICE_ID
+        DIGILOCK_ENROLL_TOKEN=$ENROLL_TOKEN
+        DIGILOCK_ALLOW_UNSIGNED_UPDATES=$ALLOW_UNSIGNED_UPDATES
+        DIGILOCK_KIOSK_ENABLED=$KIOSK_ENABLED
+        EOF
 
       install -m 0644 nginx-digilock.conf "$1/etc/nginx/sites-available/digilock"
       rm -f "$1/etc/nginx/sites-enabled/default"
