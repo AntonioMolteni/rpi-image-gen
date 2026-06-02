@@ -125,17 +125,48 @@ mmdebstrap:
       install -d "$1/opt/digilock/agent/releases/bootstrap" "$1/opt/digilock/agent/current"
       install -d "$1/etc/digilock"
 
-      cat <<EOF > "$1/etc/digilock/default.env"
-        DIGILOCK_KIOSK_URL=$KIOSK_URL
-        DIGILOCK_API_BIND=$API_BIND
-        DIGILOCK_UPDATE_BASE_URL=$UPDATE_BASE_URL
-        DIGILOCK_UPDATE_BASE_URLS=$UPDATE_BASE_URLS
-        DIGILOCK_UPDATE_CHANNEL=$UPDATE_CHANNEL
-        DIGILOCK_DEVICE_ID=$DEVICE_ID
-        DIGILOCK_ENROLL_TOKEN=$ENROLL_TOKEN
-        DIGILOCK_ALLOW_UNSIGNED_UPDATES=$ALLOW_UNSIGNED_UPDATES
-        DIGILOCK_KIOSK_ENABLED=$KIOSK_ENABLED
-        EOF
+      {
+        echo "DIGILOCK_KIOSK_URL=$KIOSK_URL"
+        echo "DIGILOCK_API_BIND=$API_BIND"
+        echo "DIGILOCK_UPDATE_BASE_URL=$UPDATE_BASE_URL"
+        echo "DIGILOCK_UPDATE_BASE_URLS=$UPDATE_BASE_URLS"
+        echo "DIGILOCK_UPDATE_CHANNEL=$UPDATE_CHANNEL"
+        echo "DIGILOCK_DEVICE_ID=$DEVICE_ID"
+        echo "DIGILOCK_ENROLL_TOKEN=$ENROLL_TOKEN"
+        echo "DIGILOCK_ALLOW_UNSIGNED_UPDATES=$ALLOW_UNSIGNED_UPDATES"
+        echo "DIGILOCK_KIOSK_ENABLED=$KIOSK_ENABLED"
+      } > "$1/etc/digilock/default.env"
+
+      # On CM5, force USB gadget mode and deterministic usb0 networking for host SSH.
+      if [ "${IGconf_device_class:-}" = "cm5" ] || [ "${IGconf_device_layer:-}" = "rpi-cm5" ]; then
+        sed -i '/^\[cm5\]$/,/^\[/{s/^dtoverlay=dwc2,dr_mode=.*/dtoverlay=dwc2,dr_mode=peripheral/}' "$1/boot/firmware/config.txt"
+
+        if ! grep -q 'modules-load=dwc2,g_ether' "$1/boot/firmware/cmdline.txt"; then
+          sed -i '1 s#$# modules-load=dwc2,g_ether#' "$1/boot/firmware/cmdline.txt"
+        fi
+
+        {
+          echo "dwc2"
+          echo "g_ether"
+        } > "$1/etc/modules-load.d/usb-gadget.conf"
+
+        {
+          echo "[Match]"
+          echo "Name=usb0"
+          echo
+          echo "[Network]"
+          echo "Address=10.55.0.1/24"
+          echo "DHCPServer=yes"
+          echo "LinkLocalAddressing=ipv4"
+          echo
+          echo "[DHCPServer]"
+          echo "PoolOffset=32"
+          echo "PoolSize=96"
+          echo "EmitDNS=yes"
+          echo "DNS=10.55.0.1"
+          echo "EmitRouter=no"
+        } > "$1/etc/systemd/network/03-usb0.network"
+      fi
 
       install -m 0644 nginx-digilock.conf "$1/etc/nginx/sites-available/digilock"
       rm -f "$1/etc/nginx/sites-enabled/default"
@@ -143,16 +174,7 @@ mmdebstrap:
 
       install -m 0755 hw-agent.sh "$1/usr/local/lib/digilock-hw-agent-fallback"
       install -m 0755 digilock-agent-launcher.sh "$1/usr/local/bin/digilock-agent-launcher"
-      install -m 0755 digilock-kiosk-launcher.sh "$1/usr/local/bin/digilock-kiosk-launcher"
-      install -m 0755 digilock-updater.sh "$1/usr/local/bin/digilock-updater"
-      install -m 0755 digilock-config-apply.sh "$1/usr/local/bin/digilock-config-apply"
 
       envsubst < digilock-hw-agent.service.tpl > "$1/etc/systemd/system/digilock-hw-agent.service"
-      envsubst < digilock-kiosk.service.tpl > "$1/etc/systemd/system/digilock-kiosk.service"
-      envsubst < digilock-updater.service.tpl > "$1/etc/systemd/system/digilock-updater.service"
-      envsubst < digilock-updater.timer.tpl > "$1/etc/systemd/system/digilock-updater.timer"
-      install -m 0644 digilock-config-apply.service "$1/etc/systemd/system/digilock-config-apply.service"
-    - $BDEBSTRAP_HOOKS/enable-units "$1" nginx digilock-hw-agent digilock-kiosk
-    - $BDEBSTRAP_HOOKS/enable-units "$1" digilock-config-apply ssh
-    - $BDEBSTRAP_HOOKS/enable-units "$1" digilock-updater.timer
+    - $BDEBSTRAP_HOOKS/enable-units "$1" nginx digilock-hw-agent ssh
     - $BDEBSTRAP_HOOKS/disable-units "$1" getty@tty1 systemd-networkd-wait-online

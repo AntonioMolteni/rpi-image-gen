@@ -2,6 +2,7 @@ include:
   file: trixie-minbase-ab.yaml
 
 device:
+  layer: rpi-cm5
   user1: pi
   user1pass: ChangeMe123!
   hostname: digilock-kiosk
