@@ -1,12 +1,6 @@
 include:
   file: trixie-minbase-ab.yaml
 
-# Install your web app package during image build.
-# Replace jellyfin with your own package name, or set a local .deb path.
-packages:
-  app: jellyfin
-# local_app: ${@SRCROOT}/debs/myapp_1.0.0_arm64.deb
-
 image:
   system_part_size: 1500M # Cage + wayland + chromium + deps
   name: digilock-kiosk-image
@@ -19,4 +13,16 @@ splash:
   image_path: ${@SRCROOT}/splash.tga
 
 kiosk:
+  # 1) Your app package name in your apt repo
+  app_pkg: my-webapp
+
+  # 2) Your apt repository info
+  repo_url: https://apt.example.com/debian
+  repo_suite: stable
+  repo_component: main
+
+  # 3) Public key for that apt repository (stored in this repo)
+  repo_key: ${@SRCROOT}/keyrings/digilock-kiosk-archive-keyring.asc
+
+  # 4) Port your app serves on localhost
   port: 8096

@@ -23,6 +23,36 @@
 # X-Env-Var-url-Required: n
 # X-Env-Var-url-Valid: string
 # X-Env-Var-url-Set: n
+#
+# X-Env-Var-app_pkg:
+# X-Env-Var-app_pkg-Desc: Package name to install from your apt repository.
+# X-Env-Var-app_pkg-Required: n
+# X-Env-Var-app_pkg-Valid: string
+# X-Env-Var-app_pkg-Set: n
+#
+# X-Env-Var-repo_url:
+# X-Env-Var-repo_url-Desc: Apt repository URL for your web app package.
+# X-Env-Var-repo_url-Required: n
+# X-Env-Var-repo_url-Valid: string
+# X-Env-Var-repo_url-Set: n
+#
+# X-Env-Var-repo_suite: stable
+# X-Env-Var-repo_suite-Desc: Apt repository suite (for example stable).
+# X-Env-Var-repo_suite-Required: n
+# X-Env-Var-repo_suite-Valid: string
+# X-Env-Var-repo_suite-Set: y
+#
+# X-Env-Var-repo_component: main
+# X-Env-Var-repo_component-Desc: Apt repository component (for example main).
+# X-Env-Var-repo_component-Required: n
+# X-Env-Var-repo_component-Valid: string
+# X-Env-Var-repo_component-Set: y
+#
+# X-Env-Var-repo_key: ${@SRCROOT}/keyrings/digilock-kiosk-archive-keyring.asc
+# X-Env-Var-repo_key-Desc: Path to ASCII-armored public key for your apt repo.
+# X-Env-Var-repo_key-Required: n
+# X-Env-Var-repo_key-Valid: string
+# X-Env-Var-repo_key-Set: y
 # METAEND
 ---
 mmdebstrap:
@@ -32,6 +62,29 @@ mmdebstrap:
   customize-hooks:
     - |
       set -eu
+
+      if [ -n "${IGconf_kiosk_repo_url:-}" ] && [ -n "${IGconf_kiosk_app_pkg:-}" ]; then
+        if [ ! -f "$IGconf_kiosk_repo_key" ]; then
+          echo "kiosk repo key file not found: $IGconf_kiosk_repo_key"
+          exit 1
+        fi
+
+        install -d -m 0755 "$1/etc/apt/keyrings"
+        install -m 0644 "$IGconf_kiosk_repo_key" \
+          "$1/etc/apt/keyrings/digilock-kiosk-archive-keyring.asc"
+
+        cat > "$1/etc/apt/sources.list.d/digilock-kiosk.sources" <<EOF
+Types: deb
+URIs: ${IGconf_kiosk_repo_url}
+Suites: ${IGconf_kiosk_repo_suite}
+Components: ${IGconf_kiosk_repo_component}
+Signed-By: /etc/apt/keyrings/digilock-kiosk-archive-keyring.asc
+EOF
+
+        chroot "$1" apt update
+        chroot "$1" apt install -y "$IGconf_kiosk_app_pkg"
+      fi
+
       export KIOSK_USER="$IGconf_device_user1"
       export KIOSK_RUNDIR="/home/$IGconf_device_user1"
 

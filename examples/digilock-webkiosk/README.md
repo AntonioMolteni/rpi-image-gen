@@ -1,29 +1,38 @@
-Build an image that boots directly into Cage/Chromium and opens your app at localhost.
+Build an image that boots directly into Cage/Chromium and opens your app on localhost.
 
-This example is intentionally simple:
+This example uses the standard apt model:
 
-* One place to select the app package installed at build time
-* One place to set the localhost port used by the browser
-* One systemd service that always starts kiosk mode at boot
+* Bake your apt key into the image
+* Bake your apt repository source into the image
+* Install your app package at build time
+* Later update with apt on the running device
 
-How to use
+Very simple setup
 
-1. Edit ./examples/digilock-webkiosk/config/kiosk.yaml
-2. Set packages.app to your package name (or use local .deb path)
-3. Set kiosk.port to your app port
+1. Put your public apt key in:
+	./examples/digilock-webkiosk/keyrings/digilock-kiosk-archive-keyring.asc
+
+2. Edit:
+	./examples/digilock-webkiosk/config/kiosk.yaml
+
+3. Set these values in the kiosk section:
+	app_pkg        package name to install
+	repo_url       apt repo URL
+	repo_suite     apt suite (example: stable)
+	repo_component apt component (example: main)
+	port           localhost port used by your web app
+
 4. Build image:
 
 rpi-image-gen build -S ./examples/digilock-webkiosk/ -c kiosk.yaml
 
-Update model (Jellyfin style)
-
-To update in the field with apt, your app must come from an apt repository
-configured on the device (public or private).
-
-Then updates are as simple as:
+How updates work after boot
 
 sudo apt update
 sudo apt install --only-upgrade <your-package>
 
-If you only install a local .deb at image build time and do not configure a
-repository, apt cannot discover newer versions automatically.
+Notes
+
+* This layer writes /etc/apt/sources.list.d/digilock-kiosk.sources
+* This layer copies key to /etc/apt/keyrings/digilock-kiosk-archive-keyring.asc
+* Your app package must start a local web server on the configured port
