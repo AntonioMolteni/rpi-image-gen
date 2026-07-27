@@ -1,17 +1,29 @@
-Build an image which automatically boots into kiosk mode to run an web application on Wayland.
+Build an image that boots directly into Cage/Chromium and opens your app at localhost.
 
-This is a very simple system which includes one of the built-in config files, overrides some settings and uses a custom layer to:
+This example is intentionally simple:
 
-* Install a set of packages over and above those provided by the base which are needed to run the kiosk
-* Install and enable a systemd service to automatically run the kiosk at boot up
+* One place to select the app package installed at build time
+* One place to set the localhost port used by the browser
+* One systemd service that always starts kiosk mode at boot
 
-It also uses the AB image layout to support switching between slots should upgrade functionality be included.
+How to use
 
-Note: This relies on the built-in configuration included by kiosk.yaml. Including this file is not necessary if kiosk.yaml specifies all attributes/layers.
-To deploy a production kiosk system it is envisaged that a specific config file would be used, therefore giving full control over the base system to the developer.
+1. Edit ./examples/digilock-webkiosk/config/kiosk.yaml
+2. Set packages.app to your package name (or use local .deb path)
+3. Set kiosk.port to your app port
+4. Build image:
 
-Usage of `-S` allows rpi-image-gen to locate the config file automatically because the source directory (`./examples/digilock-webkiosk/`) is prioritised in the search path.
-
-```bash
 rpi-image-gen build -S ./examples/digilock-webkiosk/ -c kiosk.yaml
-```
+
+Update model (Jellyfin style)
+
+To update in the field with apt, your app must come from an apt repository
+configured on the device (public or private).
+
+Then updates are as simple as:
+
+sudo apt update
+sudo apt install --only-upgrade <your-package>
+
+If you only install a local .deb at image build time and do not configure a
+repository, apt cannot discover newer versions automatically.
