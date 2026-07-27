@@ -3,14 +3,14 @@ include:
 
 image:
   system_part_size: 1500M # Cage + wayland + chromium + deps
-  name: mykioskimage
+  name: digilock-kiosk-image
 
 layer:
-  app: example-kiosk
+  app: digilock-kiosk
   extra: rpi-splash-screen
 
 splash:
   image_path: ${@SRCROOT}/splash.tga
 
 kiosk:
-  url: "https://raspberrypi.com"
+  url: "http://localhost:8080"

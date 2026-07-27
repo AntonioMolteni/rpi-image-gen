@@ -10,8 +10,8 @@ It also uses the AB image layout to support switching between slots should upgra
 Note: This relies on the built-in configuration included by kiosk.yaml. Including this file is not necessary if kiosk.yaml specifies all attributes/layers.
 To deploy a production kiosk system it is envisaged that a specific config file would be used, therefore giving full control over the base system to the developer.
 
-Usage of `-S` allows rpi-image-gen to locate the config file automatically because the source directory (`./examples/webkiosk/`) is prioritised in the search path.
+Usage of `-S` allows rpi-image-gen to locate the config file automatically because the source directory (`./examples/digilock-webkiosk/`) is prioritised in the search path.
 
 ```bash
-rpi-image-gen build -S ./examples/webkiosk/ -c kiosk.yaml
+rpi-image-gen build -S ./examples/digilock-webkiosk/ -c kiosk.yaml
 ```
