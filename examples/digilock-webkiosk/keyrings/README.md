@@ -1,11 +1,11 @@
-Place your apt repository public key here.
+This directory contains the Jellyfin apt repository public key used by the example.
 
 Expected file path:
 ./examples/digilock-webkiosk/keyrings/digilock-kiosk-archive-keyring.asc
 
-How to create this file:
-1. Export your repository public key in ASCII armored format.
-2. Replace the placeholder file content with that real key.
+If you switch to a different apt repository:
+1. Export that repository public key in ASCII armored format.
+2. Replace this file content with the new key.
 3. Keep the BEGIN/END PGP PUBLIC KEY BLOCK lines.
 
 Why this exists:

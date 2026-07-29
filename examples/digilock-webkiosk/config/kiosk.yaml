@@ -2,7 +2,7 @@ include:
   file: trixie-minbase-ab.yaml
 
 image:
-  system_part_size: 1500M # Cage + wayland + chromium + deps
+  system_part_size: 2200M # Jellyfin + Cage + wayland + chromium + deps
   name: digilock-kiosk-image
 
 layer:
@@ -13,16 +13,17 @@ splash:
   image_path: ${@SRCROOT}/splash.tga
 
 kiosk:
-  # 1) Your app package name in your apt repo
-  app_pkg: my-webapp
+  # 1) Real app package to install
+  app_pkg: jellyfin
 
-  # 2) Your apt repository info
-  repo_url: https://apt.example.com/debian
-  repo_suite: stable
+  # 2) Jellyfin apt repository info
+  repo_url: https://repo.jellyfin.org/debian
+  repo_suite: trixie
   repo_component: main
 
-  # 3) Public key for that apt repository (stored in this repo)
+  # 3) Public key for that repository (stored in this repo)
   repo_key: ${@SRCROOT}/keyrings/digilock-kiosk-archive-keyring.asc
 
-  # 4) Port your app serves on localhost
+  # 4) Jellyfin serves on localhost:8096 and UI on /web/index.html
   port: 8096
+  url: http://localhost:8096/web/index.html

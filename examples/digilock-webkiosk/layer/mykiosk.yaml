@@ -73,13 +73,13 @@ mmdebstrap:
         install -m 0644 "$IGconf_kiosk_repo_key" \
           "$1/etc/apt/keyrings/digilock-kiosk-archive-keyring.asc"
 
-        cat > "$1/etc/apt/sources.list.d/digilock-kiosk.sources" <<EOF
-Types: deb
-URIs: ${IGconf_kiosk_repo_url}
-Suites: ${IGconf_kiosk_repo_suite}
-Components: ${IGconf_kiosk_repo_component}
-Signed-By: /etc/apt/keyrings/digilock-kiosk-archive-keyring.asc
-EOF
+        {
+          echo "Types: deb"
+          echo "URIs: ${IGconf_kiosk_repo_url}"
+          echo "Suites: ${IGconf_kiosk_repo_suite}"
+          echo "Components: ${IGconf_kiosk_repo_component}"
+          echo "Signed-By: /etc/apt/keyrings/digilock-kiosk-archive-keyring.asc"
+        } > "$1/etc/apt/sources.list.d/digilock-kiosk.sources"
 
         chroot "$1" apt update
         chroot "$1" apt install -y "$IGconf_kiosk_app_pkg"
