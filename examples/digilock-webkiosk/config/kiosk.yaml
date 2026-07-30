@@ -5,6 +5,11 @@ image:
   system_part_size: 2200M # Jellyfin + Cage + wayland + chromium + deps
   name: digilock-kiosk-image
 
+device:
+  user1: pi
+  user1pass: Debug123!
+  user1sudo: passwd
+
 layer:
   app: digilock-kiosk
   extra: rpi-splash-screen
