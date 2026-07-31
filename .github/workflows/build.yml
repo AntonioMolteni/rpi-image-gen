@@ -29,8 +29,7 @@ jobs:
       - name: build
         run: |
           ./rpi-image-gen build -S ./examples/digilock-webkiosk/ -c kiosk.yaml -- \
-            IGconf_kiosk_app_pkg='' \
-            IGconf_kiosk_repo_url=''
+            IGconf_kiosk_install_app=n
 
   build-arm64-qemu:
     name: build (arm64, qemu on ubuntu-24.04)
@@ -57,6 +56,5 @@ jobs:
       - name: build
         run: |
           ./rpi-image-gen build -S ./examples/digilock-webkiosk/ -c kiosk.yaml -f -- \
-            IGconf_kiosk_app_pkg='' \
-            IGconf_kiosk_repo_url=''
+            IGconf_kiosk_install_app=n
 

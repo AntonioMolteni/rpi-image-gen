@@ -53,6 +53,13 @@
 # X-Env-Var-repo_key-Required: n
 # X-Env-Var-repo_key-Valid: string
 # X-Env-Var-repo_key-Set: y
+#
+# X-Env-Var-install_app: y
+# X-Env-Var-install_app-Desc: Controls whether apt repository setup and app package
+#  installation are performed during image build.
+# X-Env-Var-install_app-Required: n
+# X-Env-Var-install_app-Valid: y,n
+# X-Env-Var-install_app-Set: y
 # METAEND
 ---
 mmdebstrap:
@@ -63,7 +70,7 @@ mmdebstrap:
     - |
       set -eu
 
-      if [ -n "${IGconf_kiosk_repo_url:-}" ] && [ -n "${IGconf_kiosk_app_pkg:-}" ]; then
+      if [ "${IGconf_kiosk_install_app:-y}" = "y" ] && [ -n "${IGconf_kiosk_repo_url:-}" ] && [ -n "${IGconf_kiosk_app_pkg:-}" ]; then
         if [ ! -f "$IGconf_kiosk_repo_key" ]; then
           echo "kiosk repo key file not found: $IGconf_kiosk_repo_key"
           exit 1
