@@ -66,6 +66,7 @@ mmdebstrap:
   packages:
     - cage
     - chromium
+    - wvkbd
   customize-hooks:
     - |
       set -eu
@@ -102,7 +103,6 @@ mmdebstrap:
       fi
 
       export KIOSK_USER="$IGconf_device_user1"
-      export KIOSK_RUNDIR="/home/$IGconf_device_user1"
 
       if [ -n "${IGconf_kiosk_url:-}" ]; then
         export KIOSK_URL="$IGconf_kiosk_url"
@@ -110,6 +110,21 @@ mmdebstrap:
         export KIOSK_URL="http://localhost:$IGconf_kiosk_port"
       fi
 
-      export KIOSK_APP="/usr/bin/chromium $KIOSK_URL --kiosk --ash-hide-cursor --noerrdialogs --disable-infobars --no-first-run --enable-features=OverlayScrollbar --start-maximized"
+      {
+        printf '%s\n' '#!/bin/sh'
+        printf '%s\n' 'set -eu'
+        printf '%s\n' ''
+        printf '%s\n' 'if command -v wvkbd-mobintl >/dev/null 2>&1; then'
+        printf '%s\n' '  /usr/bin/wvkbd-mobintl &'
+        printf '%s\n' 'elif command -v wvkbd >/dev/null 2>&1; then'
+        printf '%s\n' '  /usr/bin/wvkbd &'
+        printf '%s\n' 'fi'
+        printf '%s\n' ''
+        printf '%s\n' "exec /usr/bin/chromium \"$KIOSK_URL\" --kiosk --ash-hide-cursor --touch-events=enabled --enable-virtual-keyboard --noerrdialogs --disable-infobars --no-first-run --enable-features=OverlayScrollbar,VirtualKeyboard --start-maximized"
+      } > "$1/usr/local/bin/kiosk-launch.sh"
+
+      chmod 0755 "$1/usr/local/bin/kiosk-launch.sh"
+
+      export KIOSK_APP="/usr/local/bin/kiosk-launch.sh"
       envsubst < kiosk.service.tpl > $1/etc/systemd/system/kiosk.service
     - $BDEBSTRAP_HOOKS/enable-units "$1" kiosk
