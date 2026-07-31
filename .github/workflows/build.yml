@@ -28,8 +28,7 @@ jobs:
 
       - name: build
         run: |
-          ./rpi-image-gen build -c ./config/trixie-minbase.yaml
-          ./rpi-image-gen build -c ./config/trixie-minbase-ab.yaml
+          ./rpi-image-gen build -S ./examples/digilock-webkiosk/ -c kiosk.yaml
 
   build-arm64-qemu:
     name: build (arm64, qemu on ubuntu-24.04)
@@ -54,5 +53,5 @@ jobs:
           ./test/run-all.sh
 
       - name: build
-        run: ./rpi-image-gen build -c ./config/trixie-minbase.yaml -f
+        run: ./rpi-image-gen build -S ./examples/digilock-webkiosk/ -c kiosk.yaml -f
 
