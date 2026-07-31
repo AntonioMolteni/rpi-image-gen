@@ -25,13 +25,13 @@
 # X-Env-Var-url-Set: n
 #
 # X-Env-Var-app_pkg:
-# X-Env-Var-app_pkg-Desc: Package name to install from your apt repository.
+# X-Env-Var-app_pkg-Desc: Package name to install from apt repositories.
 # X-Env-Var-app_pkg-Required: n
 # X-Env-Var-app_pkg-Valid: string
 # X-Env-Var-app_pkg-Set: n
 #
 # X-Env-Var-repo_url:
-# X-Env-Var-repo_url-Desc: Apt repository URL for your web app package.
+# X-Env-Var-repo_url-Desc: Optional custom apt repository URL for your web app package.
 # X-Env-Var-repo_url-Required: n
 # X-Env-Var-repo_url-Valid: string
 # X-Env-Var-repo_url-Set: n
@@ -70,26 +70,35 @@ mmdebstrap:
     - |
       set -eu
 
-      if [ "${IGconf_kiosk_install_app:-y}" = "y" ] && [ -n "${IGconf_kiosk_repo_url:-}" ] && [ -n "${IGconf_kiosk_app_pkg:-}" ]; then
-        if [ ! -f "$IGconf_kiosk_repo_key" ]; then
-          echo "kiosk repo key file not found: $IGconf_kiosk_repo_key"
-          exit 1
+      app_pkg="${IGconf_kiosk_app_pkg:-}"
+      repo_url="${IGconf_kiosk_repo_url:-}"
+
+      # Empty YAML values can resolve to literal 'None'; treat that as unset.
+      if [ "$app_pkg" = "None" ]; then app_pkg=""; fi
+      if [ "$repo_url" = "None" ]; then repo_url=""; fi
+
+      if [ "${IGconf_kiosk_install_app:-y}" = "y" ] && [ -n "$app_pkg" ]; then
+        if [ -n "$repo_url" ]; then
+          if [ ! -f "$IGconf_kiosk_repo_key" ]; then
+            echo "kiosk repo key file not found: $IGconf_kiosk_repo_key"
+            exit 1
+          fi
+
+          install -d -m 0755 "$1/etc/apt/keyrings"
+          install -m 0644 "$IGconf_kiosk_repo_key" \
+            "$1/etc/apt/keyrings/digilock-kiosk-archive-keyring.asc"
+
+          {
+            echo "Types: deb"
+            echo "URIs: ${repo_url}"
+            echo "Suites: ${IGconf_kiosk_repo_suite}"
+            echo "Components: ${IGconf_kiosk_repo_component}"
+            echo "Signed-By: /etc/apt/keyrings/digilock-kiosk-archive-keyring.asc"
+          } > "$1/etc/apt/sources.list.d/digilock-kiosk.sources"
         fi
 
-        install -d -m 0755 "$1/etc/apt/keyrings"
-        install -m 0644 "$IGconf_kiosk_repo_key" \
-          "$1/etc/apt/keyrings/digilock-kiosk-archive-keyring.asc"
-
-        {
-          echo "Types: deb"
-          echo "URIs: ${IGconf_kiosk_repo_url}"
-          echo "Suites: ${IGconf_kiosk_repo_suite}"
-          echo "Components: ${IGconf_kiosk_repo_component}"
-          echo "Signed-By: /etc/apt/keyrings/digilock-kiosk-archive-keyring.asc"
-        } > "$1/etc/apt/sources.list.d/digilock-kiosk.sources"
-
         chroot "$1" apt update
-        chroot "$1" apt install -y "$IGconf_kiosk_app_pkg"
+        chroot "$1" apt install -y "$app_pkg"
       fi
 
       export KIOSK_USER="$IGconf_device_user1"

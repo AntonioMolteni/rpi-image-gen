@@ -13,16 +13,17 @@ splash:
   image_path: ${@SRCROOT}/splash.tga
 
 kiosk:
-  # 1) Your app package name in your apt repo
-  app_pkg: my-webapp
+  # 1) Test app package from Debian apt repository
+  app_pkg: lighttpd
 
-  # 2) Your apt repository info
-  repo_url: https://apt.example.com/debian
+  # 2) Optional custom apt repository info (leave empty to use default repos)
+  repo_url:
   repo_suite: stable
   repo_component: main
 
   # 3) Public key for that apt repository (stored in this repo)
   repo_key: ${@SRCROOT}/keyrings/digilock-kiosk-archive-keyring.asc
 
-  # 4) Port your app serves on localhost
-  port: 8096
+  # 4) Lighttpd default local URL and port
+  port: 80
+  url: http://localhost
